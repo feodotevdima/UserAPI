@@ -70,13 +70,13 @@ namespace WebAPI.Controllers
 
         [Route("LogIn")]
         [HttpPost]
-        public async Task<IResult> PostLogIn([FromBody] CreateUser reqest)
+        public async Task<IResult> PostLogIn([FromBody] LoginUser reqest)
         {
             var user = await Task.Run(() => userService.GetUserByEmail(reqest.Email));
             if (user == null) 
                 return Results.StatusCode(401);
 
-            if ((reqest.Name != user.Name) || (reqest.Password != user.Password))
+            if ((reqest.Password != user.Password))
                 return Results.StatusCode(401);
 
             var token = jwtProvider.GenerateToken(user);
