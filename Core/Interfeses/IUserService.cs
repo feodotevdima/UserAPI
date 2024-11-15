@@ -8,10 +8,11 @@ namespace Core.Interfeses
 {
     public interface IUserService
     {
-        void Add(User user);
-        void Remove(User user);
+        Boolean Add(User user);
+        Boolean Remove(User user);
+        Boolean Update(User user);
         List<User> GetUsers();
-        User GetUserById(int id);
-        User GetUserByName(string name);
+        User? GetUserById(int id);
+        User? GetUserByEmail(string email);
     }
 }

@@ -7,24 +7,37 @@ namespace Aplication
 {
     public class UserService : IUserService
     {
-        public void Add(User user)
+        public Boolean Add(User user)
         {
-            if (user == null) return;
+            if (user == null) return false;
             using (ApplicationContext db = new ApplicationContext())
             {
                 db.Users.Add(user);
                 db.SaveChanges();
             }
+            return true;
         }
 
-        public void Remove(User user)
+        public Boolean Remove(User user)
         {
-            if (user == null) return;
+            if (user == null) return false;
             using (ApplicationContext db = new ApplicationContext())
             {
                 db.Users.Remove(user);
                 db.SaveChanges();
             }
+            return true;
+        }
+
+        public Boolean Update(User user)
+        {
+            if (user == null) return false;
+            using (ApplicationContext db = new ApplicationContext())
+            {
+                db.Users.Update(user);
+                db.SaveChanges();
+            }
+            return true;
         }
 
         public List<User> GetUsers()
@@ -36,17 +49,15 @@ namespace Aplication
             }            
         }
 
-        public User GetUserById(int id)
+        public User? GetUserById(int id)
         {
-            var l=GetUsers();
-            var u = l.Where(item => item.Id == id).FirstOrDefault();
+            User? u = GetUsers().Where(item => item.Id == id).FirstOrDefault();
             return u;
         }
 
-        public User GetUserByName(string name)
+        public User? GetUserByEmail(string email)
         {
-            var l = GetUsers();
-            var u = l.Where(item => item.Name.ToLower() == name.ToLower()).FirstOrDefault();
+            User? u = GetUsers().Where(item => item.Name.ToLower() == email.ToLower()).FirstOrDefault();
             return u;
         }
     }
