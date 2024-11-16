@@ -16,7 +16,7 @@ namespace Aplication
         static public string secretKey= "dcfyvgubhinnoiuhgytfytguo[pij[oijomkp";
         public string GenerateToken(User user)
         {
-            Claim[] claims = [new("UserId", user.Id.ToString())];
+            Claim[] claims = { new("UserId", user.Id.ToString()) };
 
             var signingCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
