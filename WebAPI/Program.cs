@@ -3,6 +3,9 @@ using Aplication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
+using Aplication.Repository;
+using Aplication.Interfeses;
+using Aplication.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +29,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddTransient<IUserRepository, UserRepository>();
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IJwtProvider, JwtProvider>();
 

@@ -1,13 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Core;
-using Aplication;
 using Core.Interfeses;
-using System.Text.Json;
 using Presistence.Contracts;
-using System.Buffers;
-using System.Text;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Authorization;
+using Aplication;
+using Aplication.Interfeses;
 
 namespace WebAPI.Controllers
 {
@@ -15,49 +12,60 @@ namespace WebAPI.Controllers
     [Route("[controller]")]
     public class UserController : ControllerBase
     {
-        IUserService userService;
-        IJwtProvider jwtProvider;
+        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
 
-        public UserController(IUserService userservice, IJwtProvider jwtprovider)
+        public UserController(IUserRepository userRepository, IUserService userService)
         {
-            userService = userservice;
-            jwtProvider = jwtprovider;
+            _userRepository = userRepository;
+            _userService = userService;
         }
 
-        [Authorize]
+        //[Authorize]
+        [Route("all")]
         [HttpGet]
-        public async Task<IResult> Get()
+        public async Task<IResult> GetAllUsersAsync()
         {
-            var u = await Task.Run(() => userService.GetUsers());
-            if (u == null) return Results.BadRequest();
-            return Results.Json(u);
+            var user = await _userRepository.GetUsersAsync();
+            if (user == null) return Results.BadRequest();
+            return Results.Json(user);
         }
 
         [HttpGet ("{id}")]
-        public async Task<IResult> Get(int id)
+        public async Task<IResult> GetUserAsync(Guid id)
         {
-            var u = await Task.Run(() => userService.GetUserById(id));
-            if (u == null) return Results.BadRequest();
-            return Results.Json(u);
+            var user = await _userRepository.GetUserByIdAsync(id);
+            if (user == null) return Results.BadRequest();
+            return Results.Json(user);
         }
 
-        [Route("SingUp")]
+        [Route("sign-up")]
         [HttpPost]
-        public async Task<IResult> PostSingUp([FromBody] CreateUser reqest)
+        public async Task<IResult> SignUpAsync([FromBody] CreateUser reqest)
         {
-            var u = await Task.Run(() => userService.GetUserByEmail(reqest.Email));
-            if (u != null) 
-                return Results.StatusCode(401);
+            var user = await _userService.CreateNewUserAsync(reqest);
 
-            if ((reqest.Name == null) || (reqest.Email == null) || (reqest.Password == null))
-                return Results.BadRequest();
-
-            User user = new User(reqest.Name, reqest.Email, reqest.Password);
-          
-            var b = await Task.Run(() => userService.Add(user));
-            if (b)
+            if (user != null)
             {
-                var token = jwtProvider.GenerateToken(user);
+                var token = await _userService.CreateTokenAsync(user);
+                var response = new
+                {
+                    Token = token
+                };
+
+                return Results.Json(response);
+            }            
+            return Results.StatusCode(401);
+        }
+
+        [Route("login")]
+        [HttpPost]
+        public async Task<IResult> LoginAsync([FromBody] LoginUser reqest)
+        {
+            var user = await _userService.CheckUserAsync(reqest);
+            if (user != null)
+            {
+                var token = await _userService.CreateTokenAsync(user);
                 var response = new
                 {
                     Token = token
@@ -65,48 +73,27 @@ namespace WebAPI.Controllers
 
                 return Results.Json(response);
             }
-            return Results.BadRequest();
+            return Results.StatusCode(401);
         }
 
-        [Route("LogIn")]
-        [HttpPost]
-        public async Task<IResult> PostLogIn([FromBody] LoginUser reqest)
+        [HttpDelete("{id}")]
+        public async Task<IResult> DeleteUserAsync(Guid id)
         {
-            var user = await Task.Run(() => userService.GetUserByEmail(reqest.Email));
-            if (user == null) 
-                return Results.StatusCode(401);
-
-            if ((reqest.Password != user.Password))
-                return Results.StatusCode(401);
-
-            var token = jwtProvider.GenerateToken(user);
-            var response = new
-            {
-                Token = token
-            };
-
-            return Results.Json(response);
-        }
-
-        [HttpDelete]
-        public async Task<IResult> Delete(User user)
-        {
-            if (user == null)
-                return Results.BadRequest();
-            var b = await Task.Run(() => userService.Remove(user));
-            if (b)
+            User user = await _userRepository.RemoveUserAsync(id);
+            if (user != null)
                 return Results.Ok();
             return Results.BadRequest();
         }
 
         [HttpPut]
-        public async Task<IResult> Put(User user)
+        public async Task<IResult> UpdateUserAsync(User user)
         {
-            if (user == null)
-                return Results.BadRequest();
-            var b = await Task.Run(() => userService.Update(user));
-            if (b)
-                return Results.Ok();
+            if (user != null)
+            {
+                User newUser = await _userRepository.UpdateUserAsync(user);
+                if (newUser != null)
+                    return Results.Ok();
+            }
             return Results.BadRequest();
         }
     }

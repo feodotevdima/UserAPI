@@ -10,7 +10,7 @@ namespace Presistence
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite("Data Source = api.db");
+            optionsBuilder.UseSqlite("Data Source = Users.db");
         }
     }
 }
