@@ -3,10 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Presistence
 {
-    public class ApplicationContext : DbContext
+    public class UserContext : DbContext
     {
         public DbSet<User> Users => Set<User>();
-        public ApplicationContext() => Database.EnsureCreated();
+        public UserContext() => Database.EnsureCreated();
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

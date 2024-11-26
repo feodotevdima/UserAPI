@@ -2,8 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Core;
 using Core.Interfeses;
 using Presistence.Contracts;
-using Microsoft.AspNetCore.Authorization;
-using Aplication;
 using Aplication.Interfeses;
 
 namespace WebAPI.Controllers
@@ -21,7 +19,6 @@ namespace WebAPI.Controllers
             _userService = userService;
         }
 
-        //[Authorize]
         [Route("all")]
         [HttpGet]
         public async Task<IResult> GetAllUsersAsync()
@@ -31,7 +28,7 @@ namespace WebAPI.Controllers
             return Results.Json(user);
         }
 
-        [HttpGet ("{id}")]
+        [HttpGet ("id/{id}")]
         public async Task<IResult> GetUserAsync(Guid id)
         {
             var user = await _userRepository.GetUserByIdAsync(id);
@@ -39,40 +36,23 @@ namespace WebAPI.Controllers
             return Results.Json(user);
         }
 
-        [Route("sign-up")]
+        [HttpGet("login/{login}")]
+        public async Task<IResult> GetUserByLoginAsync(string login)
+        {
+            var user = await _userRepository.GetUserByEmailAsync(login);
+            if (user == null) return Results.BadRequest();
+            return Results.Json(user);
+        }
+
+        [Route("add")]
         [HttpPost]
-        public async Task<IResult> SignUpAsync([FromBody] CreateUser reqest)
+        public async Task<IResult> AddUserAsync([FromBody] CreateUser reqest)
         {
             var user = await _userService.CreateNewUserAsync(reqest);
 
             if (user != null)
-            {
-                var token = await _userService.CreateTokenAsync(user);
-                var response = new
-                {
-                    Token = token
-                };
+                return Results.Json(user);     
 
-                return Results.Json(response);
-            }            
-            return Results.StatusCode(401);
-        }
-
-        [Route("login")]
-        [HttpPost]
-        public async Task<IResult> LoginAsync([FromBody] LoginUser reqest)
-        {
-            var user = await _userService.CheckUserAsync(reqest);
-            if (user != null)
-            {
-                var token = await _userService.CreateTokenAsync(user);
-                var response = new
-                {
-                    Token = token
-                };
-
-                return Results.Json(response);
-            }
             return Results.StatusCode(401);
         }
 

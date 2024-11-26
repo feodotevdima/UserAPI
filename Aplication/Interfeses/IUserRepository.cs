@@ -1,5 +1,4 @@
-﻿
-namespace Core.Interfeses
+﻿namespace Core.Interfeses
 {
     public interface IUserRepository
     {

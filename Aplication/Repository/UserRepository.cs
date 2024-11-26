@@ -2,11 +2,6 @@
 using Core.Interfeses;
 using Microsoft.EntityFrameworkCore;
 using Presistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Aplication.Repository
 {
@@ -15,7 +10,7 @@ namespace Aplication.Repository
         public async Task<User> AddUserAsync(User user)
         {
             if (user == null) return null;
-            using (ApplicationContext db = new ApplicationContext())
+            using (UserContext db = new UserContext())
             {
                 await db.Users.AddAsync(user);
                 await db.SaveChangesAsync();
@@ -27,7 +22,7 @@ namespace Aplication.Repository
         {
             var user = await GetUserByIdAsync(id);
             if (user == null) return null;
-            using (ApplicationContext db = new ApplicationContext())
+            using (UserContext db = new UserContext())
             {
                 db.Users.Remove(user);
                 await db.SaveChangesAsync();
@@ -38,7 +33,7 @@ namespace Aplication.Repository
         public async Task<User> UpdateUserAsync(User user)
         {
             if (user == null) return null;
-            using (ApplicationContext db = new ApplicationContext())
+            using (UserContext db = new UserContext())
             {
                 db.Users.Update(user);
                 await db.SaveChangesAsync();
@@ -48,7 +43,7 @@ namespace Aplication.Repository
 
         public async Task<List<User>> GetUsersAsync()
         {
-            using (ApplicationContext db = new ApplicationContext())
+            using (UserContext db = new UserContext())
             {
                 var users = await db.Users.ToListAsync();
                 return users;
