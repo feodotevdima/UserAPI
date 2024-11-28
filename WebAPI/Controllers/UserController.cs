@@ -29,7 +29,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet ("id/{id}")]
-        public async Task<IResult> GetUserAsync([FromBody] Guid id)
+        public async Task<IResult> GetUserAsync(Guid id)
         {
             var user = await _userRepository.GetUserByIdAsync(id);
             if (user == null) return Results.BadRequest();
@@ -37,7 +37,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpGet("login/{login}")]
-        public async Task<IResult> GetUserByLoginAsync([FromBody] string login)
+        public async Task<IResult> GetUserByLoginAsync(string login)
         {
             var user = await _userRepository.GetUserByEmailAsync(login);
             if (user == null) return Results.BadRequest();
@@ -46,7 +46,7 @@ namespace WebAPI.Controllers
 
         [Route("add")]
         [HttpPost]
-        public async Task<IResult> AddUserAsync([FromBody] CreateUser reqest)
+        public async Task<IResult> AddUserAsync(CreateUser reqest)
         {
             var user = await _userService.CreateNewUserAsync(reqest);
 
@@ -57,7 +57,7 @@ namespace WebAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IResult> DeleteUserAsync([FromBody] Guid id)
+        public async Task<IResult> DeleteUserAsync(Guid id)
         {
             User user = await _userRepository.RemoveUserAsync(id);
             if (user != null)
