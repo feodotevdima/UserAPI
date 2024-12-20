@@ -3,6 +3,7 @@ using Core;
 using Core.Interfeses;
 using Presistence.Contracts;
 using Aplication.Interfeses;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace WebAPI.Controllers
 {
@@ -26,6 +27,22 @@ namespace WebAPI.Controllers
             var user = await _userRepository.GetUsersAsync();
             if (user == null) return Results.BadRequest();
             return Results.Json(user);
+        }
+
+        [HttpGet("{token}")]
+        public async Task<IResult> GetUserByTokenAsync(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            if (handler.CanReadToken(token))
+            {
+                JwtSecurityToken jwtToken = handler.ReadJwtToken(token);
+                string? userId = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+                Guid.TryParse(userId, out var Id);
+                var user = await _userRepository.GetUserByIdAsync(Id);
+                if (user == null) return Results.BadRequest();
+                return Results.Json(user);
+            }
+            return Results.BadRequest();
         }
 
         [HttpGet ("id/{id}")]
@@ -53,7 +70,7 @@ namespace WebAPI.Controllers
             if (user != null)
                 return Results.Json(user);     
 
-            return Results.StatusCode(401);
+            return Results.StatusCode(400);
         }
 
         [HttpDelete("{id}")]
