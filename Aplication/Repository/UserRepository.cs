@@ -2,11 +2,21 @@
 using Core.Interfeses;
 using Microsoft.EntityFrameworkCore;
 using Presistence;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
 
 namespace Aplication.Repository
 {
     public class UserRepository : IUserRepository
     {
+        private readonly HttpClient _httpClient;
+
+        public UserRepository(HttpClient httpClient)
+        {
+            _httpClient = httpClient;
+        }
+
         public async Task<User> AddUserAsync(User user)
         {
             if (user == null) return null;

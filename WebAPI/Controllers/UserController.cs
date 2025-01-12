@@ -82,11 +82,14 @@ namespace WebAPI.Controllers
             return Results.BadRequest();
         }
 
-        [HttpPut]
-        public async Task<IResult> UpdateUserAsync([FromBody] User user)
+        [HttpPut("{id}")]
+        public async Task<IResult> UpdateUserAsync(string id, [FromBody] String name)
         {
-            if (user != null)
+            if (name != null)
             {
+                Guid.TryParse(id, out var IdGuid);
+                var user = await _userRepository.GetUserByIdAsync(IdGuid);
+                user.Name = name;
                 User newUser = await _userRepository.UpdateUserAsync(user);
                 if (newUser != null)
                     return Results.Ok();
