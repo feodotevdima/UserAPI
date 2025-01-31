@@ -4,6 +4,7 @@ using Core.Interfeses;
 using Presistence.Contracts;
 using Aplication.Interfeses;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authorization;
 
 namespace WebAPI.Controllers
 {
@@ -13,11 +14,16 @@ namespace WebAPI.Controllers
     {
         private readonly IUserRepository _userRepository;
         private readonly IUserService _userService;
+        private readonly string _targetFilePath = Path.Combine(Directory.GetCurrentDirectory(), "UploadedFiles");
 
         public UserController(IUserRepository userRepository, IUserService userService)
         {
             _userRepository = userRepository;
             _userService = userService;
+            if (!Directory.Exists(_targetFilePath))
+            {
+                Directory.CreateDirectory(_targetFilePath);
+            }
         }
 
         [Route("all")]
@@ -71,6 +77,34 @@ namespace WebAPI.Controllers
                 return Results.Json(user);     
 
             return Results.StatusCode(400);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("upload")]
+        public async Task<IActionResult> UploadFile(IFormFile file)
+        {
+            var token = Request.Headers["Authorization"].ToString();
+            token = token.Substring(7);
+            var userIdStr = _userService.GetUserIdFromToken(token);
+
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file uploaded.");
+            }
+
+            var fileExtension = Path.GetExtension(file.FileName);
+
+            var newFileName = $"{userIdStr}{fileExtension}";
+
+            var filePath = Path.Combine(_targetFilePath, newFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            return Ok(new { FilePath = filePath });
         }
 
         [HttpDelete("{id}")]

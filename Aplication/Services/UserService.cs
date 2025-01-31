@@ -3,6 +3,7 @@ using Core;
 using Core.Interfeses;
 using Presistence.Contracts;
 using System.Collections;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -38,6 +39,19 @@ namespace Aplication.Services
                 User user = new User(reqest.Name, reqest.Email, hash, salt);
                 await _userRepository.AddUserAsync(user);
                 return user;
+            }
+            return null;
+        }
+
+        public string? GetUserIdFromToken(string token)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            if (handler.CanReadToken(token))
+            {
+                JwtSecurityToken jwtToken = handler.ReadJwtToken(token);
+                string? userId = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
+
+                return userId;
             }
             return null;
         }
