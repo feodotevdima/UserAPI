@@ -14,7 +14,7 @@ namespace WebAPI.Controllers
     {
         private readonly IUserRepository _userRepository;
         private readonly IUserService _userService;
-        private readonly string _targetFilePath = Path.Combine(Directory.GetCurrentDirectory(), "UploadedFiles");
+        private readonly string _targetFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 
         public UserController(IUserRepository userRepository, IUserService userService)
         {
@@ -34,6 +34,7 @@ namespace WebAPI.Controllers
             if (user == null) return Results.BadRequest();
             return Results.Json(user);
         }
+
 
         [HttpGet("{token}")]
         public async Task<IResult> GetUserByTokenAsync(string token)
@@ -65,6 +66,17 @@ namespace WebAPI.Controllers
             var user = await _userRepository.GetUserByEmailAsync(login);
             if (user == null) return Results.BadRequest();
             return Results.Json(user);
+        }
+
+        [HttpGet("images/{imageName}")]
+        public IActionResult GetImage(string imageName)
+        {
+            var imagePath = Path.Combine("wwwroot", imageName);
+            if (!System.IO.File.Exists(imagePath))
+                return NotFound();
+
+            var imageFileStream = System.IO.File.OpenRead(imagePath);
+            return File(imageFileStream, "image/jpeg");
         }
 
         [Route("add")]
@@ -103,6 +115,11 @@ namespace WebAPI.Controllers
             {
                 await file.CopyToAsync(stream);
             }
+
+            Guid.TryParse(userIdStr, out var id);
+            var user = await _userRepository.GetUserByIdAsync(id);
+            user.Image = "User/images/"+newFileName;
+            var u = await _userRepository.UpdateUserAsync(user);
 
             return Ok(new { FilePath = filePath });
         }
